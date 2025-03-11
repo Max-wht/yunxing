@@ -9,6 +9,7 @@ import Forum from '@/views/admin/Forum.vue'
 import Logger from '@/views/admin/Logger.vue'
 import Main from '@/views/user/Main.vue'
 import ProgramList from '@/views/admin/ProgramList.vue'
+import CreateAnnounce from '@/views/admin/createAnnouncement.vue'
 
 
 
@@ -23,6 +24,10 @@ const router = createRouter({
     {
       path:'/login',
       component:Login
+    },
+    {
+      path:"/addAnnounce",
+      component:CreateAnnounce,
     },
     {
       path:'/admin',

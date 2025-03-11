@@ -24,7 +24,7 @@
 <el-row style="margin: 10px;">
     <el-table :data="tableData">
         <el-table-column prop="name"  label="公告"></el-table-column>
-        <el-table-column prop="createTime" width="188" label="发布时间"></el-table-column>
+        <el-table-column prop="createTime" width="288" label="发布时间"></el-table-column>
         <el-table-column label="操作" width="120">
             <template  #default="scope">
                 <span class="text-button" @click="handleEdit(scope.row)">修改</span>
@@ -42,12 +42,22 @@ import { reactive , ref ,onMounted} from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import axios from 'axios';
+import { ta } from 'element-plus/es/locales.mjs';
 
 // 定义notice接口类型
-interface Notice {
+interface Notice1 {
     id: number;
     name: string;
     createTime: string;
+}
+
+interface Notice {
+    id: number;
+    content: string;
+    name: string;
+    current?: number | null;
+    startTime?: Date | null;
+    endTime?: Date | null;
 }
 
 interface NoticeQueryDto {
@@ -63,6 +73,7 @@ const tableData = ref<Notice[]>([]);
 const searchTime = ref<Date[]>([]);
 const selectedRows = ref<Notice[]>([]);
 const noticeQueryDto = ref<NoticeQueryDto>({});
+const data = ref<any>(null)
 
 onMounted(() => {
     fetchFreshData();
@@ -86,23 +97,34 @@ async function fetchFreshData() {
             startTime: startTime,
             endTime: endTime,
             //name: xxx
-            ...noticeQueryDto.value
+            name: noticeQueryDto.value.name,
         };
-        console.log(params);
         const response = await axios({
             method: 'post',
-            url: 'notice/query',
+            url: 'http://192.168.1.11:8081/notice/Announcements',
             data: params,
         });
-        const { data } = response;
-        tableData.value = data.data;
-        totalItems.value = data.total;
+        console.log(response.data);
+         data.value= response.data;
+         tableData.value = data.value.data.row.map((item: any) => ({
+            ...item,
+            createTime: new Date(item.createTime).toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            })
+        })) || [];
+        console.log(tableData.value);
     }catch(error){
         console.log(error);
     }
 }
 
 //添加Announce
+//TODO /createNotice 模块
 const addNotice = () => {
     sessionStorage.setItem('noticeOperation', 'save');
     router.push('/createNotice');
@@ -175,7 +197,7 @@ const handleCurrentChange = (val: number) => {
 const handleEdit = (row: Notice) => {
     sessionStorage.setItem('noticeInfo', JSON.stringify(row));
     sessionStorage.setItem('noticeOperation', 'update');
-    router.push('/createNotice');
+    router.push('/addAnnounce');
 };
 
 //@Click删除Announce方法
