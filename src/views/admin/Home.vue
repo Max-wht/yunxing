@@ -1,5 +1,3 @@
-
-
 <template>
     <div class="menu-container">
       <el-container>
@@ -12,7 +10,6 @@
                 <div style="margin-top: 12px;">
                     <AdminMenu :flag="flag" :routes="adminRoutes" :bag="bagMenu" @select="handleRouteSelect"/>
                 </div>
-
             </el-aside>
             <el-container class="main">
                 <el-header class="header-section">
@@ -21,9 +18,48 @@
                 <el-main class="content-section">
                         <router-view></router-view>
                 </el-main>
-                
             </el-container>
-        
+            <!-- 个人中心 -->
+            <el-dialog v-model="dialogOperaion" :show-close="false" width="30%">
+                <template #title>
+                    <div style="padding: 25px 0 0 20px;">
+                        <span style="font-size: 18px;font-weight: 800;">个人中心</span>
+                    </div>
+                </template>
+                <el-row style="padding: 10px 20px 20px 20px;">
+                    <el-row>
+                        <p style="font-size: 12px;padding: 3px 0;margin-bottom: 10px;">
+                            <span class="modelName">*头像</span>
+                        </p>
+                        <el-upload class="avatar-uploader" action="/api/book-manage-sys-api/v1.0/file/upload"
+                            :show-file-list="false" :on-success="handleAvatarSuccess">
+                            <img v-if="userInfo.url" :src="userInfo.url" style="width: 80px;height: 80px;">
+                            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                        </el-upload>
+                    </el-row>
+                    <el-row>
+                        <p style="font-size: 12px;padding: 3px 0;">
+                            <span class="modelName">*用户名</span>
+                        </p>
+                        <input class="input-title" v-model="userInfo.name" placeholder="用户名">
+                    </el-row>
+                    <el-row>
+                        <p style="font-size: 12px;padding: 3px 0;">
+                            <span class="modelName">*用户手机号</span>
+                        </p>
+                        <input class="input-title" v-model="userInfo.phone" placeholder="用户手机号">
+                    </el-row>
+                </el-row>
+                <template #footer>
+                    <span class="dialog-footer">
+                        <el-button class="customer" size="small" style="background-color: rgb(241, 241, 241);border: none;"
+                            @click="dialogOperaion = false">取 消</el-button>
+                        <el-button size="small" style="background-color: #15559a;border: none;" class="customer" type="info"
+                            @click="updateUserInfo">修改</el-button>
+                    </span>
+                </template>
+                
+            </el-dialog>
       </el-container>
     </div>
   </template>
@@ -38,19 +74,22 @@ import { useRoute, useRouter, type RouteRecordRaw } from 'vue-router';
 const route = useRoute();
 
 import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 
 let colorLogo= '#1c1c1c'
-let flag = false;
+let flag = ref(false);
 let adminRoutes = ref<RouteRecordRaw[]>([])
 let bagMenu: 'rgb(248,248,248)'
-let dialogOperaion= false
+let dialogOperaion= ref(false)
 let userInfo = ref({
     id: null,
-    url: '',
+    avatar: '',
     name: '',
     role: null,
     phone: ''
 })
+
+const tag = ref('')
 
 onMounted(() => {
     let menus = router.options.routes.filter(router => router.path ==='/admin')[0]
@@ -60,13 +99,13 @@ onMounted(() => {
 })
 
 function menuOperationHistory() {
-    flag = sessionStorage.getItem('flag') === 'true'
+    flag.value = sessionStorage.getItem('flag') === 'true'
 }
 
-let tag ='可视化';
 function handleRouteSelect(index: string){
     const ary = adminRoutes.value.filter(entity => entity.path == index);
-    tag = ary[0].name as string;
+    tag.value = ary[0].name as string;
+    console.log(tag.value);
     if(route.path == index){
         return;
     }else{
@@ -76,19 +115,39 @@ function handleRouteSelect(index: string){
 function eventListener(event: string) {
    // 个人中心
    if (event === 'center') {
-        dialogOperaion = true;
+        console.log('center');
+        dialogOperaion.value = true;
     }
     // 退出登录
     if (event === 'loginOut') {
         loginOut();
     }
-}
-//TODO 个人中心：updateUserInfo  
+} 
 function selectOperation(f: boolean) {
-   flag = f;
+   flag.value = f;
 }
+
+//TODO 退出登录的逻辑
 function loginOut() {
-    //TODO 退出登录的逻辑
+    
+}
+//TODO 更新个人信息
+function updateUserInfo() {
+   
+}
+
+interface UploadResponse {
+    code: number;
+    data: string;
+}
+
+function handleAvatarSuccess(res: UploadResponse) {
+    if (res.code !== 200) {
+        ElMessage.error('头像上传异常');
+        return;
+    }
+    ElMessage.success('头像上传成功');
+    userInfo.value.url = res.data;
 }
 </script>
 

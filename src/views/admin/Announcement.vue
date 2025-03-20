@@ -24,7 +24,7 @@
 <el-row style="margin: 10px;">
     <el-table :data="tableData">
         <el-table-column prop="name"  label="公告"></el-table-column>
-        <el-table-column prop="createTime" width="288" label="发布时间"></el-table-column>
+        <el-table-column prop="createTime" width="288" label="发布时间" :formatter="formatDateTime"></el-table-column>
         <el-table-column label="操作" width="120">
             <template  #default="scope">
                 <span class="text-button" @click="handleEdit(scope.row)">修改</span>
@@ -32,7 +32,15 @@
             </template>
         </el-table-column>
     </el-table>
-    <el-pagination background layout="prev, pager, next" :total="totalItems" />
+    <el-pagination 
+        background 
+        layout="total, prev, pager, next" 
+        :total= 50
+        :page-size="pageSize"
+        :current-page="currentPage"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+    />
 </el-row>
 
 </template>
@@ -67,13 +75,28 @@ interface NoticeQueryDto {
 const router = useRouter();
 const currentPage = ref(1);
 const pageSize = ref(8);
-const totalItems = ref(0);
+const totalItems = ref(50);
 //返回的信息tableData
 const tableData = ref<Notice[]>([]);
 const searchTime = ref<Date[]>([]);
 const selectedRows = ref<Notice[]>([]);
 const noticeQueryDto = ref<NoticeQueryDto>({});
 const data = ref<any>(null)
+
+// 添加时间格式化函数
+const formatDateTime = (row: any, column: any) => {
+    if (column.property === 'createTime') {
+        return new Date(row.createTime).toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
+    return row[column.property];
+}
 
 onMounted(() => {
     fetchFreshData();
@@ -101,22 +124,13 @@ async function fetchFreshData() {
         };
         const response = await axios({
             method: 'post',
-            url: 'http://192.168.1.11:8081/notice/Announcements',
+            url: '/api/notice/Announcements',
             data: params,
         });
         console.log(response.data);
-         data.value= response.data;
-         tableData.value = data.value.data.row.map((item: any) => ({
-            ...item,
-            createTime: new Date(item.createTime).toLocaleDateString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            })
-        })) || [];
+        data.value = response.data;
+        tableData.value = data.value.data.row || [];
+        totalItems.value = data.value.data.total || 0;  // 设置总数据量
         console.log(tableData.value);
     }catch(error){
         console.log(error);
@@ -124,39 +138,34 @@ async function fetchFreshData() {
 }
 
 //添加Announce
-//TODO /createNotice 模块
 const addNotice = () => {
     sessionStorage.setItem('noticeOperation', 'save');
-    router.push('/createNotice');
+    router.push('/addAnnounce');
 };
 
 const handleSelectionChange = (selection: Notice[]) => {
     selectedRows.value = selection;
 };
 
-
-//批量删除Announce
-const batchDelete = async () => {
-    if (!selectedRows.value.length) {
-        ElMessage(`未选中任何数据`);
-        return;
-    }
+//@Click删除Announce方法
+const handleDelete = async (row: Notice) => {
     const confirmed = await ElMessageBox.confirm('删除后不可恢复，是否继续？', '删除公告数据', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
     });
     if (confirmed) {
+        console.log("ID:" + row.id);
         try {
-            const ids = selectedRows.value.map(entity => entity.id);
-            const response = await axios.post(`notice/batchDelete`, ids);
-            if (response.data.code === 200) {
-
+            const response = await axios({
+                method: 'delete',
+                url: `http://localhost:8081/notice/delete?id=${row.id}`,
+            });
+            if (response.data.code === 1) {
                 fetchFreshData();
                 return;
             }
         } catch (e) {
-
             console.error(`公告信息删除异常：`, e);
         }
     }
@@ -195,15 +204,10 @@ const handleCurrentChange = (val: number) => {
 
 //@Click修改Announce方法
 const handleEdit = (row: Notice) => {
+    console.log(row);
     sessionStorage.setItem('noticeInfo', JSON.stringify(row));
     sessionStorage.setItem('noticeOperation', 'update');
     router.push('/addAnnounce');
-};
-
-//@Click删除Announce方法
-const handleDelete = (row: Notice) => {
-    selectedRows.value.push(row);
-    batchDelete();
 };
 </script>
 

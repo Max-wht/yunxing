@@ -41,7 +41,7 @@ async function loginAndRegister() {
     }
     try {
         const res = await axios({
-            url:"http://192.168.1.11:8081/user/mobileLogin",
+            url:"/api/user/mobileLogin",
             method:"post",
             data:{
                 mobile:phone.value,
@@ -49,7 +49,15 @@ async function loginAndRegister() {
             }
         })
         console.log(res.data.data);
+        if(res.data.code == 0){
+            let msg = res.data.msg;
+            alert(msg);
+        }
         Character = res.data.data.Character;
+        if(Character == null){
+            Character = '0';
+        }
+        console.log(Character);
         switch(Character){
             case '0':
                 alert('教师端登录成功');
@@ -72,7 +80,7 @@ async function sendSMS() {
     }
     try {
         await axios({
-            url:"http://192.168.1.11:8081/user/sendmSMS",
+            url:"/api/user/sendmSMS",
             method:"post",
             data:{
                 mobile:phone.value

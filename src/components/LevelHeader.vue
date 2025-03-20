@@ -6,13 +6,14 @@
     </span>
     <span>
         <span class="operation-span-tag">
-            &nbsp;&nbsp;{{ tag == '' ? '元数据' : tag }}
+            &nbsp;&nbsp;
+            {{ props.tag }}
         </span>
     </span>
     <span class="user-block">
         <el-dropdown class="user-dropdown">
             <span class="el-dropdown-link" style="display: flex; align-items: center;">
-                <el-avatar :size="50" :src="defaultAvatar" />
+                <el-avatar :size="50" :src="defaultAvatar" style="margin-top: 0;" />
                 <span class="userName" style="margin-left: 5px;font-size: 16px;">Max</span>
                 <i class="el-icon-arrow-down el-icon--right" style="margin-left: 5px;">
                     <el-icon><ArrowDown /></el-icon>
@@ -20,14 +21,12 @@
             </span>
             <template #dropdown>
                 <el-dropdown-menu>
-
-                <el-dropdown-item v-on="userCenterPanel">
+                <el-dropdown-item @click="userCenterPanel">
                     <el-icon><Edit /></el-icon>个人资料
                 </el-dropdown-item>
-                <el-dropdown-item v-on="loginOut">
+                <el-dropdown-item @click="loginOut">
                     <el-icon><CircleClose /></el-icon>退出登录
                 </el-dropdown-item>
-
                 </el-dropdown-menu>
             </template>
         </el-dropdown>
@@ -44,7 +43,7 @@ const emit = defineEmits(['eventListener'])
 const props = defineProps({
     tag: {
         type: String,
-        default: '可视化'
+        default: 'Home'
     },
     userInfo:{
         type: Object,
@@ -59,6 +58,7 @@ function userCenterPanel() {
 function loginOut() {
     emit('eventListener', 'loginOut');
 }
+
 </script>
 
 <style scoped lang="scss">
@@ -69,7 +69,7 @@ function loginOut() {
     flex-wrap: wrap;
     width: 100%;
     position: relative;
-    background-color: rgb(216, 216, 216);
+    background-color:rgb(248, 248, 248);
     color: #666;
 
     .operation-span-tag {

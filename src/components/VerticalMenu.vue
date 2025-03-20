@@ -1,7 +1,7 @@
 <template>
-    <el-menu :collapse-transition="true" :collapse="flag"
+    <el-menu :collapse-transition="true" :collapse="props.flag"
     style="padding: 5px 20px;max-width: 253px;"
-    :default-active="activeIndex" :background-color="bag" text-color="#666"
+    :default-active="activeIndex" :background-color="props.bag" text-color="#666"
     @select="handleSelect">
 
         <el-menu-item v-for="(item,index) in routes" :key="index" style="width: 100%;"
@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, onMounted } from 'vue';
+import { defineProps, onMounted, ref } from 'vue';
 import type { RouteRecordRaw } from 'vue-router';
 
 // interface RoutesItem {
@@ -44,9 +44,7 @@ const props = defineProps({
     }
 })
 
-let activeIndex = '1';
-
-
+const activeIndex = ref('1');
 
 //  function：显示历史选中路径
 onMounted(() => {
@@ -60,11 +58,10 @@ onMounted(() => {
 
 // function：通过侧边啦跳转到对应子页面
 function handleSelect(index: string) {
-    activeIndex = index;
+    activeIndex.value = index;
     // alert('select:' + index);
     // 浏览器提供的 Web Storage API 的一部分，用于在当前会话期间存储数据
     sessionStorage.setItem('activePath',index);
-
 }
 </script>
 

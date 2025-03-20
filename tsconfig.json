@@ -1,8 +1,6 @@
 {
   "files": [],
-  "include": [
-    "custom-types.d.ts"
-  ],
+
   "references": [
     {
       "path": "./tsconfig.node.json"
@@ -11,4 +9,5 @@
       "path": "./tsconfig.app.json"
     }
   ],
+
 }

@@ -4,16 +4,17 @@
             <p style="font-size: 22px;padding: 20px 0;">{{ noticeOperation === 'save' ? '公告新增' : '公告修改' }}</p>
             <div>
                 <div style="margin: 20px 0;">
-                    <input type="text" placeholder="标题" v-model="notice.name">
+                    <input style="font-weight: bold;" class="title" type="text" placeholder="标题" v-model="notice.name">
                 </div>
                 <div>
-                    <Editor height="calc(100vh - 500px)" :receiveContent="notice.content" @on-receive="receiveData" />
+                    <!-- <Editor height="calc(100vh - 500px)" :receiveContent="notice" @on-receive="receiveData" /> -->
+                    <input style="font-size: 16px;" type="text" placeholder="内容" v-model="notice.content">
                 </div>
             </div>
             <div style="margin: 20px 0;text-align: center;">
+
                 <span class="operation-btn" @click="operation">
                     {{ noticeOperation === 'save' ? '立即新增' : '立即修改' }}
-                    <i class="el-icon-right"></i>
                 </span>
             </div>
         </div>
@@ -24,15 +25,16 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import Editor from '@/components/Editor.vue';
+import axios from 'axios';
 const router = useRouter()
 const notice = ref<{ name?: string, content?: string }>({});
-const saveApi = '/Annuncement/save';
-const updateApi = '/Annuncement/update';
+const updateAPI = '/api/notice/update'
+const saveApi = '/api/notice/save';
 const noticeOperation = ref<string>('');
 
 
 const operation = () => {
+    //如果是新增则新增，是跟新就更新
     if (noticeOperation.value === 'save') {
         save();
         return;
@@ -40,9 +42,11 @@ const operation = () => {
     update();
 };
 
+/**
+ * 页面初始化
+ */
 const loadOperation = () => {
     const operation = sessionStorage.getItem('noticeOperation');
-    console.log(operation);
     if (operation === 'update') {
         const noticeInfo = sessionStorage.getItem('noticeInfo');
         notice.value = noticeInfo ? JSON.parse(noticeInfo) : {};
@@ -50,42 +54,49 @@ const loadOperation = () => {
     noticeOperation.value = operation || '';
 };
 
-const receiveData = (html: string) => {
-    notice.value.content = html;
-};
+// const receiveData = (html: string) => {
+    
+//     notice.value.content = html;
+//     console.log(html,1);
+// };
 
-const update = () => {
-    fetch(updateApi, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(notice.value),
+async function update() {
+    console.log( notice.value);
+    const response = await axios({
+        method: 'post',
+        url: updateAPI,
+        data: notice.value,
     })
-    .then(response => response.json())
-    .then(response => {
-        if (response.code === 200) {
-            ElMessage.success('修改成功');
-            router.go(-1);
-        }
-    });
-};
-
-const save = () => {
-    fetch(saveApi, {
+    //检查code
+    if (response.data.code === 1) {
+        ElMessage.success('修改成功');
+        router.go(-1);
+    }
+}
+async function save() {
+    const response = await axios({
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(notice.value),
-    })
-    .then(response => response.json())
-    .then(response => {
-        if (response.code === 200) {
-            ElMessage.success('新增成功');
-            router.go(-1);
-        }
+        url: saveApi,
+        data: notice.value
     });
+    if (response.data.code === 1) {
+        ElMessage.success('新增成功');
+        router.go(-1);
+    }
+}
+
+
+const save1 = async () => {
+    console.log(notice.value);
+    const response = await axios({
+        method: 'POST',
+        url: saveApi,
+        data: notice.value
+    });
+    if (response.data.code === 200) {
+        ElMessage.success('新增成功');
+        router.go(-1);
+    }
 };
 
 onMounted(() => {
@@ -102,7 +113,8 @@ input {
     font-size: 24px;
     box-sizing: border-box;
     border-radius: 5px;
-    font-weight: bold;
+
+
 }
 
 .operation-btn {
