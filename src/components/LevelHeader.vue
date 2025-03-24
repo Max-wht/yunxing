@@ -13,8 +13,8 @@
     <span class="user-block">
         <el-dropdown class="user-dropdown">
             <span class="el-dropdown-link" style="display: flex; align-items: center;">
-                <el-avatar :size="50" :src="defaultAvatar" style="margin-top: 0;" />
-                <span class="userName" style="margin-left: 5px;font-size: 16px;">Max</span>
+                <el-avatar :size="50" :src=props.userInfo.avatar style="margin-top: 0;" />
+                <span class="userName" style="margin-left: 5px;font-size: 16px;">{{ props.userInfo.name }}</span>
                 <i class="el-icon-arrow-down el-icon--right" style="margin-left: 5px;">
                     <el-icon><ArrowDown /></el-icon>
                 </i>

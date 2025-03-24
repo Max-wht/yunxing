@@ -33,7 +33,7 @@
                         </p>
                         <el-upload class="avatar-uploader" action="/api/book-manage-sys-api/v1.0/file/upload"
                             :show-file-list="false" :on-success="handleAvatarSuccess">
-                            <img v-if="userInfo.url" :src="userInfo.url" style="width: 80px;height: 80px;">
+                            <img v-if="userInfo.avatar" :src="userInfo.avatar" style="width: 80px;height: 80px;">
                             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                         </el-upload>
                     </el-row>
@@ -42,12 +42,6 @@
                             <span class="modelName">*用户名</span>
                         </p>
                         <input class="input-title" v-model="userInfo.name" placeholder="用户名">
-                    </el-row>
-                    <el-row>
-                        <p style="font-size: 12px;padding: 3px 0;">
-                            <span class="modelName">*用户手机号</span>
-                        </p>
-                        <input class="input-title" v-model="userInfo.phone" placeholder="用户手机号">
                     </el-row>
                 </el-row>
                 <template #footer>
@@ -72,29 +66,85 @@ import LevelHeader from '@/components/LevelHeader.vue';
 import router from '@/router';
 import { useRoute, useRouter, type RouteRecordRaw } from 'vue-router';
 const route = useRoute();
-
+import axios from 'axios';
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { getUserId } from '@/utils/storage.js';
 
 let colorLogo= '#1c1c1c'
 let flag = ref(false);
 let adminRoutes = ref<RouteRecordRaw[]>([])
 let bagMenu: 'rgb(248,248,248)'
 let dialogOperaion= ref(false)
-let userInfo = ref({
+
+interface UserInfo {
+    id: number | null;
+    avatar: string;
+    subCount: number | null;
+    name: string | null;
+    role: number | null;
+}
+
+let userInfo = ref<UserInfo>({
     id: null,
     avatar: '',
+    subCount: null,
     name: '',
     role: null,
-    phone: ''
 })
 
 const tag = ref('')
 
+async function tokenCheckLoad() {
+    //从LocalStorage中获取用户ID:Login界面需要保存cookies，然后从中解析出来ID值
+    const userId = getUserId();
+    console.log('====='+userId);
+    try {
+        const response = await axios({
+            method:"GET",
+            url: `/api/user/auth?userId=${userId}`,
+        });
+        // 错误处理
+        if (response.data.code === 0) {
+            ElMessage.error(response.data.msg);
+            router.push('/login');
+            return;
+        }
+        // 用户信息赋值
+        const { 
+            id, 
+            userAvatar: avatar,
+            userName: name,
+            userRole: role,
+            subCount,
+        } = response.data.data;
+
+        userInfo.value = { 
+            id: id,
+            avatar: avatar,
+            subCount: subCount,
+            name: name,
+            role: role,
+        };
+        console.log(userInfo.value);
+        // 根据角色解析路由(暂时不需要)
+        // const rolePath = role === 1 ? '/admin' : '/user';
+        // const targetMenu = router.options.routes.find(route => route.path === rolePath);
+        // if (targetMenu) {
+        //     adminRoutes.value = targetMenu.children || [];
+        // } else {
+        //     console.warn(`未找到与角色对应的路由：${rolePath}`);
+        // }
+    } catch (error) {
+        console.error('获取用户认证信息时发生错误:', error);
+        ElMessage.error('认证信息加载失败，请重试！');
+    }
+}
+
 onMounted(() => {
     let menus = router.options.routes.filter(router => router.path ==='/admin')[0]
     adminRoutes.value = menus?.children??[]
-    // tokenCheckLoad();
+    tokenCheckLoad();
     menuOperationHistory();
 })
 
@@ -147,7 +197,7 @@ function handleAvatarSuccess(res: UploadResponse) {
         return;
     }
     ElMessage.success('头像上传成功');
-    userInfo.value.url = res.data;
+    userInfo.value.avatar = res.data;
 }
 </script>
 

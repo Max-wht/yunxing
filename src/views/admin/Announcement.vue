@@ -159,7 +159,7 @@ const handleDelete = async (row: Notice) => {
         try {
             const response = await axios({
                 method: 'delete',
-                url: `http://localhost:8081/notice/delete?id=${row.id}`,
+                url: `/api/notice/delete?id=${row.id}`,
             });
             if (response.data.code === 1) {
                 fetchFreshData();

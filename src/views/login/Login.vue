@@ -29,10 +29,10 @@
 <script setup name="Login">
 import { ref } from 'vue'
 import axios from 'axios';
+import { setUserId } from '@/utils/storage.js';
 
 let phone = ref('')
 let code = ref('')
-let Character;
 
 async function loginAndRegister() {
     if(!phone.value || !code.value){
@@ -48,30 +48,40 @@ async function loginAndRegister() {
                 code:code.value
             }
         })
-        console.log(res.data.data);
-        if(res.data.code == 0){
-            let msg = res.data.msg;
-            alert(msg);
-        }
-        Character = res.data.data.Character;
-        if(Character == null){
-            Character = '0';
-        }
-        console.log(Character);
-        switch(Character){
-            case '0':
-                alert('教师端登录成功');
-                window.location.href = '/admin';
-                break;
-            case '1':
-                alert('学生端注册成功');
-                window.location.href = '/user';
-                break;
+        console.log('完整响应数据：', res.data);
+        console.log('character的类型:', typeof res.data.data.character);
+        console.log('character的值:', res.data.data.character);
+        
+        if(res.data.code == 1){
+            //在LocalStorage中设置用户id
+            const {userId} = res.data.data;
+            console.log('userId的值:', userId);
+            setUserId(userId);
+
+            const {character} = res.data.data;
+            // 将character转换为字符串进行比较
+            const characterStr = String(character);
+            console.log('转换后的character:', characterStr);
+            
+            switch(characterStr){
+                case '1':
+                    alert('教师端登录成功');
+                    window.location.href = '/admin';
+                    break;
+                case '0':
+                    alert('学生端注册成功');
+                    window.location.href = '/user';
+                    break;
+                default:
+                    alert('未知用户类型：' + characterStr);
+            }
+        } else {
+            alert(res.data.msg);
         }
     }catch(err){
         console.log(err)
+        alert('登录失败，请稍后重试');
     }
-
 }
 
 async function sendSMS() {

@@ -1,6 +1,7 @@
 const TOKEN_KEY="token"
 const INFO = "health-info";
 const ACTIVE_PATH="active_key"
+const USER = "user_id";
 export function getToken(){
     return sessionStorage.getItem(TOKEN_KEY);
 }
@@ -11,6 +12,14 @@ export function setToken(token){
 
 export function getHealthInfo(){
     return sessionStorage.getItem(INFO);
+}
+
+export function getUserId(){
+    return sessionStorage.getItem(USER);
+}
+
+export function setUserId(id){
+    sessionStorage.setItem(USER,id);
 }
 
 export function setHealthInfo(obj){
