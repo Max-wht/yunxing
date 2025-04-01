@@ -27,7 +27,7 @@
                 </template>
             </el-table-column>
             <el-table-column prop="nickName" label="姓名"></el-table-column>
-            <el-table-column prop="classesId" label="班级"></el-table-column>
+            <el-table-column prop="className" label="班级"></el-table-column>
             <el-table-column prop="subCount" label="提交次数"></el-table-column>
             <el-table-column prop="userCharacter" label="角色">
                 <template #default="scope">
@@ -80,7 +80,7 @@ const total = ref(0);
 interface Member {
     nickName: string | null;
     avatar: string;
-    classesId: number;
+    className: string;
     subCount: number;
     userCharacter: string | null;
     updateTime: string;

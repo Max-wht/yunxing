@@ -10,7 +10,7 @@ import Logger from '@/views/admin/Logger.vue'
 import Main from '@/views/user/Main.vue'
 import ProgramList from '@/views/admin/ProgramList.vue'
 import CreateAnnounce from '@/views/admin/createAnnouncement.vue'
-
+import ProgramDetail from '@/views/admin/ProgramDetail.vue'
 
 
 
@@ -28,6 +28,14 @@ const router = createRouter({
     {
       path:"/addAnnounce",
       component:CreateAnnounce,
+    },
+    {
+      path:'/program-detail/:id',
+      component:ProgramDetail,
+      name: "Program Detail",
+      meta: {
+        icon: 'el-icon-s-home'
+      }
     },
     {
       path:'/admin',
